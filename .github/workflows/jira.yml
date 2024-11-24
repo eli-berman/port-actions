@@ -1,0 +1,61 @@
+name: Jira Integration Workflow
+
+on:
+  pull_request:
+    types: [opened, edited, closed, merged]
+
+jobs:
+  jira-integration:
+    name: Jira Integration Job
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js (if necessary for additional scripting)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # Step 3: Connect to Jira API
+      - name: Connect to Jira
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          # Replace this with actual Jira API commands or scripts
+          echo "Connecting to Jira..."
+          curl -X GET -u $JIRA_EMAIL:$JIRA_API_TOKEN "$JIRA_BASE_URL/rest/api/3/project"
+
+      # Step 4: Automatically Create or Update Jira Issues
+      - name: Create or Update Jira Issue
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          if [[ "${{ github.event.action }}" == "opened" ]]; then
+            echo "Creating Jira issue for PR..."
+            curl -X POST -u $JIRA_EMAIL:$JIRA_API_TOKEN \
+              -H "Content-Type: application/json" \
+              -d '{
+                    "fields": {
+                      "project": {
+                        "key": "DEMO"
+                      },
+                      "summary": "PR: ${{ github.event.pull_request.title }}",
+                      "description": "A new pull request has been opened: ${{ github.event.pull_request.html_url }}",
+                      "issuetype": {
+                        "name": "Task"
+                      }
+                    }
+                  }' \
+              "$JIRA_BASE_URL/rest/api/3/issue"
+          elif [[ "${{ github.event.action }}" == "closed" ]]; then
+            echo "Updating Jira issue for merged PR..."
+            # Add your Jira issue update logic here
+          fi
