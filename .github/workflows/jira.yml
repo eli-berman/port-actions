@@ -1,9 +1,12 @@
 name: Jira Integration Workflow
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
-    types: [opened, edited, closed, merged]
-
+    branches:
+      - main
 jobs:
   jira-integration:
     name: Jira Integration Job
