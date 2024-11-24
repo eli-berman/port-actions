@@ -1,6 +1,7 @@
 name: Jira Integration Workflow
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
